@@ -13,3 +13,9 @@ export interface ISigninBodyInputDTO {
   password: string;
 
 }
+
+export interface IConfirmEmailDTO {
+  email: string;
+  otp: string;
+
+}

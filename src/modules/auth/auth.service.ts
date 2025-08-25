@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { ISignupBodyInputDTO } from "./auth.dto";
+import { ISignupBodyInputDTO, IConfirmEmailDTO, ISigninBodyInputDTO } from "./auth.dto";
 import * as validators from "./auth.validation";
 import {
   ApplicationException,
@@ -10,15 +10,7 @@ import UserModel from "../../DB/models/user.model";
 
 class AuthService {
   confirmEmail = async (req: Request, res: Response): Promise<Response> => {
-    const { email, otp } = req.body;
-    const validationResult = validators.confirmEmailValidation.body.safeParse(
-      req.body
-    );
-    if (!validationResult.success) {
-      throw new BadRequestException("Validation Error", {
-        issues: validationResult.error.issues,
-      });
-    }
+    const { email, otp }:IConfirmEmailDTO = req.body;
     const user = await UserModel.findOne({ email });
     if (!user) {
       throw new ApplicationException("User not found", 404);
@@ -39,15 +31,6 @@ class AuthService {
   };
 
   signup = async (req: Request, res: Response): Promise<Response> => {
-    const validationResult = validators.signupValidation.body.safeParse(
-      req.body
-    );
-    if (!validationResult.success) {
-      throw new BadRequestException("Validation Error", {
-        issues: validationResult.error.issues, 
-      });
-    }
-
     const data: ISignupBodyInputDTO = req.body;
 
     const existingUser = await UserModel.findOne({ email: data.email });
@@ -69,15 +52,7 @@ class AuthService {
   };
 
   signin = async (req: Request, res: Response): Promise<Response> => {
-    const validationResult = validators.signinValidation.body.safeParse(
-      req.body
-    );
-    if (!validationResult.success) {
-      throw new BadRequestException("Validation Error", {
-        issues: validationResult.error.issues, 
-      });
-    }
-    const data: ISignupBodyInputDTO = req.body;
+    const data: ISigninBodyInputDTO = req.body;
 
     const user = await UserModel.findOne({ email: data.email });
     

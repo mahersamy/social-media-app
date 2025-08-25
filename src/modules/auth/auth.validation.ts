@@ -12,7 +12,7 @@ export const signupValidation = {
         ),
       confirmPassword: z.string(),
       phone: z.string().regex(/^01[0-2,5]\d{8}$/),
-      age: z.number().int().min(1),
+      age: z.number().int().min(8),
       gender: z.enum(["male", "female", "other"]),
       // role is intentionally excluded
     })
