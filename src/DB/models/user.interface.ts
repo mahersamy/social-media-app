@@ -14,12 +14,14 @@ export interface IUser {
   lastName: string;
   email: string;
   age: number;
+  phone:string;
   password: string;
   username: string;
   confirmOtp?: string;
   role: UserRole;
   gender: Gender;
-  isConfirmed:Date;
+  isConfirmed?:Date;
+  changeCredentioalsTime?:Date;
   createdAt?: Date;
   updatedAt?: Date;
 }

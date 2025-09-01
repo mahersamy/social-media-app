@@ -4,6 +4,8 @@ import { verifyEmailTemplate } from "./templates/verify.email.template";
 export async function sendConfirmEmail(to: string, otp: string) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
+    port:465,
+    secure:true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -11,7 +13,7 @@ export async function sendConfirmEmail(to: string, otp: string) {
   });
 
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_USER,    
     to,
     subject: "Confirm your email",
     text: `Your OTP code is: ${otp}`,            

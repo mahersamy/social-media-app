@@ -22,7 +22,36 @@ export class BadRequestException extends ApplicationException {
     constructor(message:string,cause?:unknown){
         super(message,400,cause)
   }
+}
+
+
+export class ConflictRequestException extends ApplicationException {
+    
+    constructor(message:string,cause?:unknown){
+        super(message,409,cause)
+  }
 } 
+
+export class UnauthorizedRequestException extends ApplicationException {
+    
+    constructor(message:string,cause?:unknown){
+        super(message,401,cause)
+  }
+} 
+
+export class ForbiddenRequestException extends ApplicationException {
+    
+    constructor(message:string,cause?:unknown){
+        super(message,403,cause)
+  }
+
+}
+export class NotFoundRequestException extends ApplicationException {
+    
+    constructor(message:string,cause?:unknown){
+        super(message,403,cause)
+  }
+}
 
 
 export const globalErrorHandling=(error:IError,req:Request,res:Response,next:NextFunction)=>{

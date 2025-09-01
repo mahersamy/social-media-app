@@ -15,6 +15,7 @@ import { rateLimit } from "express-rate-limit";
 
 // Load App Module
 import authController from "./modules/auth/auth.controller";
+import userController from "./modules/user/user.controller";
 import { globalErrorHandling } from "./utils/response/error.response";
 import { connectDB } from "./DB/connectionDB";
 
@@ -44,6 +45,7 @@ const bootstrap = () => {
 
   // Module Routing
   app.use("/auth", authController);
+  app.use("/users", userController);
 
   
   
