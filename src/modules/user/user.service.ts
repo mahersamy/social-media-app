@@ -1,13 +1,13 @@
 import { type NextFunction, type Response, type Request } from "express";
 import { ILogoutDto } from "./user.dto";
 import { logoutEnum } from "../../utils/security/token.security";
-import UserModel from "../../DB/models/user.model";
+import UserModel, { HUserDocument } from "../../DB/models/user.model";
 import { UpdateQuery } from "mongoose";
 import { IUser } from "../../DB/models/user.interface";
 import { UserRepository } from "../../DB/repository/user.repository";
 import { TokenRepository } from "../../DB/repository/token.repository";
 import TokenModel from "../../DB/models/token.model";
-
+import TokenUtil from "../../utils/security/token.security"
 class UserService {
   private userRepo = new UserRepository(UserModel);
   private tokenRepo = new TokenRepository(TokenModel);
@@ -48,6 +48,23 @@ class UserService {
 
     return res.json({ message: "success" });
   };
+
+  refreshToken= async (req: Request, res: Response, next: NextFunction) =>{
+    await this.tokenRepo.create({
+          data: [
+            {
+              userId: req.user!._id,
+              jti: req.decode?.jti as string,
+              expiresAt: new Date(req.decode!.exp! * 1000),
+              revoked: true,
+            },
+          ],
+        });
+    const {accessToken,refreshToken}= await TokenUtil.createLoginCredentioals(req.user as HUserDocument);
+    
+    return res.json({ message: "Signin Success", accessToken,refreshToken });
+
+  }
 }
 
 export default new UserService();

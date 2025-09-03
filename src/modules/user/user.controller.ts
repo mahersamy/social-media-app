@@ -4,6 +4,7 @@ import { authenticationMiddleware, authorizationMiddleware } from "../../middlew
 import { userRoles } from "./user.authorization";
 import { validationMiddelware } from "../../middleware/validation.middleware";
 import * as Validation from "./user.validation";
+import { tokenTypeEnum } from "../../utils/security/token.security";
 
 
 const router=Router()
@@ -11,6 +12,7 @@ const router=Router()
 
 router.get("/profile",authenticationMiddleware(),authorizationMiddleware(userRoles),UserService.profile)
 router.delete("/logout",authenticationMiddleware(),validationMiddelware(Validation.logoutValidation),UserService.logout)
+router.post("/refresh",authenticationMiddleware(tokenTypeEnum.Refresh),UserService.refreshToken)
 
 
 export default router;

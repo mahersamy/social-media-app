@@ -12,7 +12,6 @@ import UserModel from "../DB/models/user.model";
 import { UserRepository } from "../DB/repository/user.repository";
 
 const tokenRepo = new TokenRepository(TokenModel);
-const userRepo = new UserRepository(UserModel);
 
 export const authenticationMiddleware = (tokenType: tokenTypeEnum = tokenTypeEnum.Access) =>
   async (req: Request, res: Response, next: NextFunction) => {
@@ -31,7 +30,6 @@ export const authenticationMiddleware = (tokenType: tokenTypeEnum = tokenTypeEnu
       tokentype: tokenType,
     });
 
-    // ✅ check revoked token (logoutEnum.only)
     if (decoded.jti) {
       const revoked = await tokenRepo.isRevoked(decoded.jti);
       if (revoked) {
@@ -39,7 +37,6 @@ export const authenticationMiddleware = (tokenType: tokenTypeEnum = tokenTypeEnu
       }
     }
 
-    // ✅ check credentials changed after token issued (logoutEnum.all)
     if (
       user?.changeCredentioalsTime &&
       decoded.iat &&
