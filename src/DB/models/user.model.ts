@@ -10,9 +10,11 @@ const UserSchema = new Schema<IUser>(
     phone: { type: String, required: true },
     password: { type: String, required: true },
     confirmOtp: { type: String },
+    forgetOtp: { type: String },
     role: { type: String, enum: Object.values(UserRole), default: UserRole.USER },
     gender: { type: String, enum: Object.values(Gender) },
     isConfirmed: { type: Date },
+    isForget: { type: Date },
     changeCredentioalsTime: { type: Date },
     
   },

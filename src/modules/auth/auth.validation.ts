@@ -43,3 +43,22 @@ export const confirmEmailValidation = {
     email: z.email(),
     otp:z.string(),
 })}
+
+
+export const forgetPasswordValidation = {
+  body: z.object({
+    email: z.email(),
+})}
+
+
+export const resetPasswordValidation = {
+  body: z.object({
+    email: z.email(),
+    otp:z.string(),
+    newPassword: z
+        .string()
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+        ),
+})}
+

@@ -19,3 +19,16 @@ export interface IConfirmEmailDTO {
   otp: string;
 
 }
+
+export interface IForgetPassword {
+  email: string;
+  
+}
+
+export interface IResetForgetPassword {
+  email: string;
+  otp: string;
+  newPassword:string;
+
+  
+}

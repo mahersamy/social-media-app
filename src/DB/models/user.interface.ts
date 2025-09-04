@@ -18,6 +18,8 @@ export interface IUser {
   password: string;
   username: string;
   confirmOtp?: string;
+  forgetOtp?: string;
+  isForget?: Date;
   role: UserRole;
   gender: Gender;
   isConfirmed?:Date;

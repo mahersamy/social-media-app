@@ -3,11 +3,14 @@ import {
   ISignupBodyInputDTO,
   IConfirmEmailDTO,
   ISigninBodyInputDTO,
+  IForgetPassword,
+  IResetForgetPassword,
 } from "./auth.dto";
 import {
   ApplicationException,
   BadRequestException,
   ConflictRequestException,
+  NotFoundRequestException,
 } from "../../utils/response/error.response";
 import { emailEvent } from "../../utils/events/email.event";
 import UserModel, { HUserDocument } from "../../DB/models/user.model";
@@ -16,10 +19,6 @@ import HashUtil from "../../utils/security/hash.security";
 import TokenUtil from "../../utils/security/token.security";
 import { Gender } from "../../DB/models/user.interface";
 import { UserRepository } from "../../DB/repository/user.repository";
-import { v4 as uuidv4 } from "uuid";
-import TokenModel from "../../DB/models/token.model";
-import { TokenRepository } from "../../DB/repository/token.repository";
-
 
 class AuthService {
   private userRepo = new UserRepository(UserModel);
@@ -28,10 +27,13 @@ class AuthService {
   signup = async (req: Request, res: Response): Promise<Response> => {
     const data: ISignupBodyInputDTO = req.body;
 
-    const existingUser = await this.userRepo.findOne({filter:{email:data.email},options:{lean:true}});
+    const existingUser = await this.userRepo.findOne({
+      filter: { email: data.email },
+      options: { lean: true },
+    });
 
     if (existingUser) {
-      throw new ConflictRequestException("Email already exits")
+      throw new ConflictRequestException("Email already exits");
     }
 
     // encryption
@@ -65,7 +67,7 @@ class AuthService {
   signin = async (req: Request, res: Response): Promise<Response> => {
     const data: ISigninBodyInputDTO = req.body;
 
-    const user = await this.userRepo.findOne({filter:{email:data.email}});
+    const user = await this.userRepo.findOne({ filter: { email: data.email } });
 
     if (!user) {
       throw new BadRequestException("Invalid Password Or Email");
@@ -84,13 +86,11 @@ class AuthService {
         403
       );
     }
-  
-    const {accessToken,refreshToken}= await TokenUtil.createLoginCredentioals(user as HUserDocument);
 
+    const { accessToken, refreshToken } =
+      await TokenUtil.createLoginCredentioals(user as HUserDocument);
 
-
-
-    return res.json({ message: "Signin Success", accessToken,refreshToken });
+    return res.json({ message: "Signin Success", accessToken, refreshToken });
   };
 
   confirmEmail = async (req: Request, res: Response): Promise<Response> => {
@@ -116,7 +116,91 @@ class AuthService {
 
     return res.json({ message: "Email confirmed successfully" });
   };
+
+  // Forget Passsword
+
+  forgetPassword = async (req: Request, res: Response) => {
+    const data: IForgetPassword = req.body;
+    // createOtp
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // hashing
+    const otpHash = await HashUtil.hash(otp);
+
+    const user = await this.userRepo.updateOneUser({
+      filter: { email: data.email },
+      update: { $set: { forgetOtp: otpHash } },
+    });
+
+    if (user.modifiedCount === 0) {
+      throw new NotFoundRequestException("user not found");
+    }
+
+    emailEvent.emit("confirmEmail", data.email, otp);
+
+    return res.status(201).json({ message: `Send Otp to email ${data.email}` });
+  };
+
+  verifyForgetPassword = async (req: Request, res: Response) => {
+    const data: IConfirmEmailDTO = req.body;
+
+    const user = await this.userRepo.findOne({ filter: { email: data.email } });
+
+    if (!user) {
+      throw new NotFoundRequestException("Please send email before verify");
+    }
+
+    const otpVerify = await HashUtil.verify(user.forgetOtp!, data.otp);
+
+    if (!otpVerify) {
+      throw new BadRequestException("Invalid OTP");
+    }
+
+    await this.userRepo.updateOne({
+      filter: { email: data.email },
+      update: {isForget:new Date()},
+    });
+
+    return res.status(201).json({
+      message: `Success to verfiy Otp you have 5 min to reset password`,
+    });
+  };
+
+  resetForgetPassword = async (req: Request, res: Response) => {
+    const data: IResetForgetPassword = req.body;
+
+    const user = await this.userRepo.findOne({ filter: { email: data.email } });
+
+    if (!user) {
+      throw new NotFoundRequestException("User not found");
+    }
+
+    if (!user.isForget) {
+      throw new BadRequestException("No forget password request found");
+    }
+
+    const now = new Date().getTime();
+    const issuedAt = new Date(user.isForget).getTime();
+    const diff = now - issuedAt;
+
+    if (diff > 5 * 60 * 1000) {
+      throw new BadRequestException("OTP expired, please request a new one");
+    }
+
+    const hashVerify = await HashUtil.verify(user.forgetOtp!, data.otp);
+    if (!hashVerify) {
+      throw new BadRequestException("Invalid OTP");
+    }
+
+    const newPasswordHash = await HashUtil.hash(data.newPassword);
+
+    await this.userRepo.updateOne({
+      filter: { email: data.email },
+      update: {password:newPasswordHash},
+    });
+    
+    return res.status(200).json({ message: `Success` });
+  };
 }
 
 export default new AuthService();
-
