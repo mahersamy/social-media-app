@@ -8,6 +8,8 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true },
     age: { type: Number, required: true },
     phone: { type: String, required: true },
+    profileImage: { type: String },
+    coverImages: { type: [String], default: [] },
     password: { type: String, required: true },
     confirmOtp: { type: String },
     forgetOtp: { type: String },

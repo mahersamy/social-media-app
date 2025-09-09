@@ -8,6 +8,7 @@ import { UserRepository } from "../../DB/repository/user.repository";
 import { TokenRepository } from "../../DB/repository/token.repository";
 import TokenModel from "../../DB/models/token.model";
 import TokenUtil from "../../utils/security/token.security"
+import { file } from "zod";
 class UserService {
   private userRepo = new UserRepository(UserModel);
   private tokenRepo = new TokenRepository(TokenModel);
@@ -63,6 +64,38 @@ class UserService {
     const {accessToken,refreshToken}= await TokenUtil.createLoginCredentioals(req.user as HUserDocument);
     
     return res.json({ message: "Signin Success", accessToken,refreshToken });
+
+  }
+
+  uploadProfileImage= async (req: Request, res: Response, next: NextFunction) =>{
+    
+
+    await this.userRepo.updateOneUser({
+      filter: { _id: req.user!._id },
+      update: {
+        profileImage: req.file?.path
+      },
+    })
+
+    return res.json({ message: "uploaded success Success",file: req.file });
+
+  }
+
+  uploadCoverImage= async (req: Request, res: Response, next: NextFunction) =>{
+    
+    let arrOfDestinationPath = [];
+    for (const file of req.files as Express.Multer.File[]) {
+      arrOfDestinationPath.push(file.path);
+    }
+
+    await this.userRepo.updateOneUser({
+      filter: { _id: req.user!._id },
+      update: {
+        coverImages: arrOfDestinationPath as string[]
+      },
+    })
+
+    return res.json({ message: "uploaded success Success",file: req.files });
 
   }
 }

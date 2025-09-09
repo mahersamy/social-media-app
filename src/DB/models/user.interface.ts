@@ -15,6 +15,8 @@ export interface IUser {
   email: string;
   age: number;
   phone:string;
+  profileImage?: string;
+  coverImages?: string[];
   password: string;
   username: string;
   confirmOtp?: string;

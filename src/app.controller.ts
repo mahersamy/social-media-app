@@ -48,7 +48,9 @@ const bootstrap = () => {
   app.use("/users", userController);
 
   
-  
+  // Get files
+
+  app.use("/uploads",express.static("uploads"));
   
   // In-valid Routing
   app.use("{/*dummy}",(req:Request,res:Response)=>{
@@ -62,7 +64,8 @@ const bootstrap = () => {
 
   app.use(globalErrorHandling)
 
- // start server   
+
+  // start server   
   app.listen(port, () => {
     console.log("Server is Running on Port " + port);
   });
