@@ -1,7 +1,7 @@
 import { Schema, model, Document, HydratedDocument, Types } from "mongoose";
 
 export interface IToken extends Document {
-  userId:  Types.ObjectId;
+  userId:Types.ObjectId;
   jti: string;
   expiresAt: Date;
   revoked: boolean;

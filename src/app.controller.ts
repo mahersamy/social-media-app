@@ -16,8 +16,10 @@ import { rateLimit } from "express-rate-limit";
 // Load App Module
 import authController from "./modules/auth/auth.controller";
 import userController from "./modules/user/user.controller";
-import { globalErrorHandling } from "./utils/response/error.response";
+import postController from "./modules/post/post.controller";
+
 import { connectDB } from "./DB/connectionDB";
+import { globalErrorHandling } from "./utils/response/error.response";
 
 // load limiter
 const limiter = rateLimit({
@@ -46,10 +48,10 @@ const bootstrap = () => {
   // Module Routing
   app.use("/auth", authController);
   app.use("/users", userController);
+  app.use("/post", postController);
 
   
   // Get files
-
   app.use("/uploads",express.static("uploads"));
   
   // In-valid Routing

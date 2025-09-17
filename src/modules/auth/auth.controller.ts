@@ -10,10 +10,11 @@ const router=Router()
 router.post("/signup",validationMiddelware(validators.signupValidation),authService.signup)
 router.post("/signin",validationMiddelware(validators.signinValidation),authService.signin)
 router.post("/confirm-email",validationMiddelware(validators.confirmEmailValidation),authService.confirmEmail)
+router.post("/two-step-verify",validationMiddelware(validators.confirmEmailValidation),authService.twoStepVerify)
 
 
 router.post("/forget-password",validationMiddelware(validators.forgetPasswordValidation),authService.forgetPassword)
 router.post("/varify-forget-password",validationMiddelware(validators.confirmEmailValidation),authService.verifyForgetPassword)
-router.post("/reset-forget-password",validationMiddelware(validators.resetPasswordValidation),authService.resetForgetPassword)
+router.put("/reset-forget-password",validationMiddelware(validators.resetPasswordValidation),authService.resetForgetPassword)
 
 export default router;

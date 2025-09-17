@@ -29,6 +29,16 @@ router.post(
   authenticationMiddleware(tokenTypeEnum.Refresh),
   UserService.refreshToken
 );
+router.post(
+  "/update-email",
+  authenticationMiddleware(),
+  UserService.updateEmail
+);
+router.patch(
+  "/confirm-update-email",
+  authenticationMiddleware(),
+  UserService.confirmUpdateEmail
+);
 router.patch(
   "/upload-profile-image",
   authenticationMiddleware(),
@@ -40,6 +50,12 @@ router.patch(
   authenticationMiddleware(),
   localUpload("cover",3).array("cover"),
   UserService.uploadCoverImage
+);
+router.patch(
+  "/update-basic-profile",
+  authenticationMiddleware(),
+  validationMiddelware(Validation.updateBasicProfileValidation),
+  UserService.updateBasicProfile
 );
 
 export default router;

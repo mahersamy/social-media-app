@@ -1,3 +1,4 @@
+
 import {
   CreateOptions,
   FlattenMaps,
@@ -60,5 +61,17 @@ async updateOne(
     options || {}
   );
 }
+
+  async findOneAndUpdate({
+    filter,
+    update,
+    options,
+  }: {
+    filter: RootFilterQuery<TDocument>;
+    update: UpdateQuery<TDocument>;
+    options?: MongooseUpdateQueryOptions<TDocument>;
+  }): Promise<FlattenMaps<TDocument> | HydratedDocument<TDocument> | null> {
+    return await this.model.findOneAndUpdate(filter, update, { new: true, ...options }).exec();
+  }
 
 }

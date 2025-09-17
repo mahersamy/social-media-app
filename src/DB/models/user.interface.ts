@@ -12,6 +12,7 @@ export enum Gender {
 export interface IUser {
   firstName: string;
   lastName: string;
+  slug: string;
   email: string;
   age: number;
   phone:string;
@@ -20,12 +21,21 @@ export interface IUser {
   password: string;
   username: string;
   confirmOtp?: string;
+  confirmOtpExpire?: Date;
+  confirmChangeEmailOtp?: string;
+  confirmChangeEmailOtpExpire?: Date;
+  twoStepVerifyOtp?: string;
+  twoStepVerifyOtpExpire?: Date;
   forgetOtp?: string;
+  forgetOtpExpire?: Date;
   isForget?: Date;
   role: UserRole;
   gender: Gender;
   isConfirmed?:Date;
+  twoStepVerify?:boolean;
   changeCredentioalsTime?:Date;
   createdAt?: Date;
   updatedAt?: Date;
+  freezedAt?:  Date;
+
 }

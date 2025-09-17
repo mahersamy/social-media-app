@@ -1,3 +1,4 @@
+
 import { 
   CreateOptions, 
   FlattenMaps, 
@@ -45,6 +46,21 @@ export class UserRepository extends DatabaseRepository<IUser> {
     return await this.findOne({ filter, select, options });
   }
 
+  async find({
+    filter,
+    options,
+  }: {
+    filter: RootFilterQuery<IUser>;
+    options?: QueryOptions;
+  }) {
+ 
+    if(options){
+      options.paranoid = true
+
+    }
+    return this.model.find(filter, null, options);
+  }
+
   async updateOneUser({
     filter,
     update,
@@ -59,5 +75,17 @@ export class UserRepository extends DatabaseRepository<IUser> {
       throw new BadRequestException("Fail To Update This User");
     }
     return result;
+  }
+
+  async findOneAndUpdateUser({
+    filter,
+    update,
+    options,
+  }: {
+    filter: RootFilterQuery<IUser>;
+    update: UpdateQuery<IUser>;
+    options?: MongooseUpdateQueryOptions<IUser>;
+  }): Promise<HydratedDocument<IUser> | FlattenMaps<IUser> | null> {
+    return await this.findOneAndUpdate({ filter, update, options });
   }
 }
