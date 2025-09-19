@@ -26,3 +26,12 @@ export const createPostValidation = {
         }
     })
 }
+
+export const likePostValidation={
+    params:z.strictObject({
+        postId:z.string().refine((id)=>Types.ObjectId.isValid(id),{error:"invalid id"})
+    }),
+    query:z.strictObject({
+        action:z.enum(["like","dislike"]).default("like")
+    })
+}

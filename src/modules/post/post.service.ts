@@ -1,16 +1,21 @@
+import { th } from "zod/v4/locales/index.cjs";
 import type { Request, Response } from "express";
 
-import { createPostDto } from "./post.dto";
+import { createPostDto, likePostDto } from "./post.dto";
 import { UserRepository } from "../../DB/repository/user.repository";
 import { PostRepository } from "../../DB/repository/post.repository";
 import UserModel from "../../DB/models/user.model";
-import { BadRequestException, NotFoundRequestException } from "../../utils/response/error.response";
-import { HPostDocument, PostModel } from "../../DB/models/post.model";
-import { ObjectId, Types } from "mongoose";
-import { th } from "zod/v4/locales/index.cjs";
+import {
+  BadRequestException,
+  NotFoundRequestException,
+} from "../../utils/response/error.response";
+import { PostModel } from "../../DB/models/post.model";
+import { Types } from "mongoose";
+
 class PostService {
   private userRepo = new UserRepository(UserModel);
   private postRepo = new PostRepository(PostModel);
+
   createPost = async (req: Request, res: Response) => {
     const data: createPostDto = req.body;
     if (
@@ -39,8 +44,8 @@ class PostService {
         },
       ],
     });
-    if(!post){
-        throw new BadRequestException("Fail To Create Post")
+    if (!post) {
+      throw new BadRequestException("Fail To Create Post");
     }
     if (req.files?.length) {
       for (const file of req.files as Express.Multer.File[]) {
@@ -52,6 +57,32 @@ class PostService {
           attachments: arrOfDestinationPath,
         },
       });
+    }
+
+    return res.status(200).json({ message: "success" });
+  };
+
+  likePost = async (req: Request, res: Response) => {
+    const { postId } = req.params! as { postId: string };
+    const action = (req.query.action === "dislike" || req.query.action === "like")
+      ? req.query.action
+      : "like";
+    let updateData: any = {
+      $addToSet: { likes: req.user!._id },
+    };
+
+    if (action === "dislike") {
+      updateData = {
+        $pull: { likes: req.user!._id },
+      };
+    }
+
+    const post = await this.postRepo.findOneAndUpdate({
+      filter: { _id: postId },
+      update: updateData,
+    });
+    if (!post) {
+      throw new NotFoundRequestException("Post not Exists");
     }
 
     return res.status(200).json({ message: "success" });
