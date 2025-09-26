@@ -74,4 +74,39 @@ async updateOne(
     return await this.model.findOneAndUpdate(filter, update, { new: true, ...options }).exec();
   }
 
+  async find({
+      filter,
+      options,
+    }: {
+      filter: RootFilterQuery<TDocument>;
+      options?: QueryOptions;
+    }) {
+   
+      if(options){
+        options.paranoid = true
+  
+      }
+      return this.model.find(filter, null, options);
+    }
+  async paginate({
+      filter,
+      options,
+      select,
+      page=1,
+      size=5
+    }: {
+      filter: RootFilterQuery<TDocument>;
+      options?: QueryOptions;
+      select?: ProjectionType<TDocument>;
+      page?: number
+      size?: number
+    }) {
+   
+      if(options){
+        options.paranoid = true
+  
+      }
+      return this.model.find(filter, null, options).select(select || "").skip((page - 1) * size).limit(size);
+    }
+
 }

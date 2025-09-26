@@ -46,20 +46,7 @@ export class UserRepository extends DatabaseRepository<IUser> {
     return await this.findOne({ filter, select, options });
   }
 
-  async find({
-    filter,
-    options,
-  }: {
-    filter: RootFilterQuery<IUser>;
-    options?: QueryOptions;
-  }) {
- 
-    if(options){
-      options.paranoid = true
-
-    }
-    return this.model.find(filter, null, options);
-  }
+  
 
   async updateOneUser({
     filter,

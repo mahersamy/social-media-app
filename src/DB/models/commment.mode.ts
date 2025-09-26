@@ -1,17 +1,10 @@
 import { HydratedDocument, model, Schema, Types } from "mongoose";
-
-export enum allowCommentsEnum {
-  allow = "allow",
-  deny = "deny",
-}
-export enum AvailabilityEnum {
-  public = "public",
-  friends = "friends",
-  onlyMe = "only-me",
-}
-export interface IPost {
+import { allowCommentsEnum, AvailabilityEnum } from "./post.model";
+export interface IComment {
   content?: string;
   attachments?: string[];
+  postId: Types.ObjectId;
+  commentId?: Types.ObjectId;
 
   allowComments: allowCommentsEnum;
   availability: AvailabilityEnum;
@@ -34,8 +27,12 @@ export interface IPost {
   updatedAt: Date;
 }
 
-const postSchema = new Schema<IPost>(
+const commentSchema = new Schema<IComment>(
   {
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
+    commentId: { type: Schema.Types.ObjectId, ref: "Comment", required: true },
+
     content: { type: String ,minLength: 1,maxlength: 50000,required:function (){
       return this.attachments?.length === 0
     } },
@@ -57,8 +54,6 @@ const postSchema = new Schema<IPost>(
     tags: [{ type: Schema.Types.ObjectId, ref: "User" }],
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
 
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-
     freezedBy: { type: Schema.Types.ObjectId, ref: "User" },
     freezedAt: { type: Date },
 
@@ -77,7 +72,7 @@ const postSchema = new Schema<IPost>(
   }
 );
 
-postSchema.pre(["find", "findOne"], async function (next) {
+commentSchema.pre(["find", "findOne"], async function (next) {
   const query = this.getQuery();
   if (query.pranoid === false) {
     this.setQuery({ ...query });
@@ -86,7 +81,7 @@ postSchema.pre(["find", "findOne"], async function (next) {
   }
   next();
 });
-postSchema.pre(["updateOne", "findOneAndUpdate"], async function (next) {
+commentSchema.pre(["updateOne", "findOneAndUpdate"], async function (next) {
   const query = this.getQuery();
   if (query.pranoid === false) {
     this.setQuery({ ...query });
@@ -97,5 +92,5 @@ postSchema.pre(["updateOne", "findOneAndUpdate"], async function (next) {
 });
 
 
-export type HPostDocument = HydratedDocument<IPost>;
-export const PostModel=model<IPost>('Post',postSchema);
+export type HcommentDocument = HydratedDocument<IComment>;
+export const commentModel=model<IComment>('Comment',commentSchema);

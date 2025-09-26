@@ -1,10 +1,8 @@
-import { confirmEmailValidation } from './../../modules/auth/auth.validation';
 import { Schema, model, HydratedDocument } from "mongoose";
 import { Gender, IUser, UserRole } from "./user.interface";
-import { BadRequestException } from "../../utils/response/error.response";
 import HashUtil from "../../utils/security/hash.security";
 import encryptionSecurity from "../../utils/security/encryption.security";
-import { emailEvent } from '../../utils/events/email.event';
+import { emailEvent } from "../../utils/events/email.event";
 
 const UserSchema = new Schema<IUser>(
   {
@@ -36,6 +34,14 @@ const UserSchema = new Schema<IUser>(
     confirmChangeEmailOtp: { type: String },
     confirmChangeEmailOtpExpire: { type: Date },
     freezedAt: { type: Date },
+    freezedBy: { type: Schema.Types.ObjectId },
+
+    restoredBy: { type: Schema.Types.ObjectId },
+    restoredAt: { type: Date },
+
+    deletedBy: { type: Schema.Types.ObjectId },
+    deletedAt: { type: Date },
+    friends: [{ type: Schema.Types.ObjectId }],
   },
   {
     strictQuery: true,
@@ -55,44 +61,53 @@ UserSchema.virtual("username").set(function (value) {
   this.slug = value.split(" ").join("-");
 });
 
-UserSchema.pre("save", async function (this:HUserDocument & {wasNew:boolean,confirmEmailPlainTextOtp?:string},next) {
-  this.wasNew = this.isNew;
-  if(this.isModified("phone")){
-    this.phone = encryptionSecurity.encrypt(this.phone);
+UserSchema.pre(
+  "save",
+  async function (
+    this: HUserDocument & {
+      wasNew: boolean;
+      confirmEmailPlainTextOtp?: string;
+    },
+    next
+  ) {
+    this.wasNew = this.isNew;
+    if (this.isModified("phone")) {
+      this.phone = encryptionSecurity.encrypt(this.phone);
+    }
+    if (this.isModified("password")) {
+      this.password = await HashUtil.hash(this.password);
+    }
+    if (this.isModified("phone")) {
+      this.phone = encryptionSecurity.encrypt(this.phone);
+    }
+    if (this.isModified("confirmOtp")) {
+      this.confirmEmailPlainTextOtp = this.confirmOtp;
+      this.confirmOtp = await HashUtil.hash(this.confirmOtp!);
+    }
+    next();
   }
-  if (this.isModified("password")) {
-    this.password = await HashUtil.hash(this.password);
-  }
-  if (this.isModified("phone")) {
-    this.phone = encryptionSecurity.encrypt(this.phone);
-  }
-  if(this.isModified("confirmOtp")){
-    this.confirmEmailPlainTextOtp = this.confirmOtp;
-    this.confirmOtp = await HashUtil.hash(this.confirmOtp!);
+);
+
+UserSchema.post("save", async function (doc, next) {
+  const that = this as HUserDocument & {
+    wasNew: boolean;
+    confirmEmailPlainTextOtp?: string;
+  };
+  if (that.wasNew && that.confirmEmailPlainTextOtp) {
+    emailEvent.emit("confirmEmail", that.email, that.confirmEmailPlainTextOtp!);
   }
   next();
 });
 
-UserSchema.post("save", async function (doc,next) {
-  const that=this as HUserDocument & {wasNew:boolean,confirmEmailPlainTextOtp?:string};
-  if(that.wasNew && that.confirmEmailPlainTextOtp){
-    emailEvent.emit("confirmEmail",that.email,that.confirmEmailPlainTextOtp!)
-  }
-  next();
-})
-
-UserSchema.pre(["find","findOne"],async function (next) {
-  const query=this.getQuery();
-  if(query.pranoid===false){
-    this.setQuery({...query})
-  }else{
-      this.setQuery({...query,freezedAt:{$exists:false}})
-
+UserSchema.pre(["find", "findOne"], async function (next) {
+  const query = this.getQuery();
+  if (query.pranoid === false) {
+    this.setQuery({ ...query });
+  } else {
+    this.setQuery({ ...query, freezedAt: { $exists: false } });
   }
   next();
 });
-
-
 
 const UserModel = model<IUser>("User", UserSchema);
 
