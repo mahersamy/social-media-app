@@ -30,3 +30,10 @@ export const createCommentValidation = {
         }
     })
 }
+export const replayCommentValidation = {
+    params:z.strictObject({
+        commentId:z.string().refine((id)=>Types.ObjectId.isValid(id),{error:"invalid id"}),
+        postId:z.string().refine((id)=>Types.ObjectId.isValid(id),{error:"invalid id"})
+    }),
+    body:createCommentValidation.body
+}

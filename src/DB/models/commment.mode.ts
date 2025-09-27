@@ -31,7 +31,7 @@ const commentSchema = new Schema<IComment>(
   {
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
-    commentId: { type: Schema.Types.ObjectId, ref: "Comment", required: true },
+    commentId: { type: Schema.Types.ObjectId, ref: "Comment" },
 
     content: { type: String ,minLength: 1,maxlength: 50000,required:function (){
       return this.attachments?.length === 0
